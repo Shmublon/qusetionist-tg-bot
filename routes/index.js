@@ -17,7 +17,8 @@ var userId = null;
 telegramBot.on("message", function (msg) {
     if (msg.text !== '/start') {
         request("https://questions-engine.herokuapp.com/random-question", function (error, response, question) {
-            nextQuestion(msg, JSON.parse(question)).then(function () {
+            nextQuestion(msg, JSON.parse(question)).then(function (previousQuestion) {
+                console.log(previousQuestion);
                 if (userId === null) {
                     request.post({
                         url: 'https://questions-engine.herokuapp.com/create-user-if-not-exist',
