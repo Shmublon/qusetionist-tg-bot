@@ -20,6 +20,7 @@ var userId = null;
 var userName = null;
 var previousQuestion = null;
 telegramBot.on("message", function (msg) {
+    console.log("Chat id: " + msg.chat.id);
     if (msg.text !== '/start') {
         var storeAnswerPromise = new Promise(function (resolve, reject) {
             if (previousQuestion !== null) {
