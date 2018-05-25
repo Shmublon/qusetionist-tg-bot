@@ -4,7 +4,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 
 var app = express();
-var telegram = require('routes/telegram');
+var telegram = require('.routes/telegram');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
