@@ -7,7 +7,7 @@ var request = require("request");
 var telegramBot = new TelegramBot(token, {polling: true});
 
 telegramBot.onText(/\/start/, function (msg) {
-    telegramBot.sendMessage(msg.chat.id, "Тут будет некое описание того как этой штукой польщоваться. " +
+    telegramBot.sendMessage(msg.chat.id, "Тут будет некое описание того как этой штукой пользоваться. " +
         "Для начала введите что угодно...", {
         "reply_markup": {
             "keyboard": [["Поехали!"]],
