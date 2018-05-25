@@ -17,34 +17,22 @@ telegramBot.onText(/\/start/, function (msg) {
 });
 
 var userId = null;
+var previousQuestion = null;
 telegramBot.on("message", function (msg) {
     if (msg.text !== '/start') {
-        request("https://questions-engine.herokuapp.com/random-question", function (error, response, question) {
-            nextQuestion(msg, JSON.parse(question)).then(function (previousQuestion) {
-                if (previousQuestion) {
-                    if (userId === null) {
-                        request.post({
-                            url: 'https://questions-engine.herokuapp.com/create-user-if-not-exist',
-                            form: {
-                                'name': msg.from.first_name,
-                                'age': 0,
-                                'gender': 'male',
-                                'balance': 0
-                            }
-                        }, function (err, httpResponse, body) {
-                            userId = JSON.parse(body).id;
-                            request.post({
-                                url: 'https://questions-engine.herokuapp.com/store-result',
-                                form: {
-                                    'answer': msg.text,
-                                    'user_id': userId,
-                                    'question_id': previousQuestion.id
-                                }
-                            }, function (error, response, body) {
-                                console.log('Stored answer id: ' + JSON.parse(body).id)
-                            });
-                        })
-                    } else {
+        var storeAnswerPromise = new Promise(function (resolve, reject) {
+            if (previousQuestion !== null) {
+                if (userId === null) {
+                    request.post({
+                        url: 'https://questions-engine.herokuapp.com/create-user-if-not-exist',
+                        form: {
+                            'name': msg.from.first_name,
+                            'age': 0,
+                            'gender': 'male',
+                            'balance': 0
+                        }
+                    }, function (err, httpResponse, body) {
+                        userId = JSON.parse(body).id;
                         request.post({
                             url: 'https://questions-engine.herokuapp.com/store-result',
                             form: {
@@ -53,10 +41,36 @@ telegramBot.on("message", function (msg) {
                                 'question_id': previousQuestion.id
                             }
                         }, function (error, response, body) {
-                            console.log('Stored answer id: ' + JSON.parse(body).id)
+                            console.log('Question: ' + previousQuestion.text);
+                            console.log('Answer: ' + msg.text);
+                            console.log('Stored!');
+                            resolve();
                         });
-                    }
+                    })
+                } else {
+                    request.post({
+                        url: 'https://questions-engine.herokuapp.com/store-result',
+                        form: {
+                            'answer': msg.text,
+                            'user_id': userId,
+                            'question_id': previousQuestion.id
+                        }
+                    }, function (error, response, body) {
+                        console.log('Question: ' + previousQuestion.text);
+                        console.log('Answer: ' + msg.text);
+                        console.log('Stored!');
+                        resolve();
+                    });
                 }
+            } else {
+                resolve();
+            }
+        });
+        storeAnswerPromise.then(function () {
+            request("https://questions-engine.herokuapp.com/random-question", function (error, response, question) {
+                var parsedQuestion = JSON.parse(question);
+                nextQuestion(msg, parsedQuestion);
+                previousQuestion = parsedQuestion;
             });
         });
     }
@@ -85,8 +99,8 @@ function nextQuestion(msg, question) {
 
 
 /* GET home page. */
-router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Express' });
+router.get('/', function (req, res, next) {
+    res.render('index', {title: 'Express'});
 });
 
-// module.exports = router;
+module.exports = router;
