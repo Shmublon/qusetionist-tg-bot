@@ -16,11 +16,11 @@ telegramBot.onText(/\/start/, function (msg) {
 var userId = null;
 telegramBot.on("message", function (msg) {
     if (msg.text !== '/start') {
-        request("http://localhost:3000/random-question", function (error, response, question) {
+        request("https://questions-engine.herokuapp.com/random-question", function (error, response, question) {
             nextQuestion(msg, JSON.parse(question)).then(function () {
                 if (userId === null) {
                     request.post({
-                        url: 'http://localhost:3000/create-user-if-not-exist',
+                        url: 'https://questions-engine.herokuapp.com/create-user-if-not-exist',
                         form: {
                             'name': msg.from.first_name,
                             'age': 0,
@@ -30,7 +30,7 @@ telegramBot.on("message", function (msg) {
                     }, function (err, httpResponse, body) {
                         userId = JSON.parse(body).id;
                         request.post({
-                            url: 'http://localhost:3000/store-result',
+                            url: 'https://questions-engine.herokuapp.com/store-result',
                             form: {
                                 'answer': msg.text,
                                 'user_id': userId,
@@ -42,7 +42,7 @@ telegramBot.on("message", function (msg) {
                     })
                 } else {
                     request.post({
-                        url: 'http://localhost:3000/store-result',
+                        url: 'https://questions-engine.herokuapp.com/store-result',
                         form: {
                             'answer': msg.text,
                             'user_id': userId,
