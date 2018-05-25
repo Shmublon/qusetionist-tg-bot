@@ -17,12 +17,13 @@ telegramBot.onText(/\/start/, function (msg) {
 });
 
 var userId = null;
+var userName = null;
 var previousQuestion = null;
 telegramBot.on("message", function (msg) {
     if (msg.text !== '/start') {
         var storeAnswerPromise = new Promise(function (resolve, reject) {
             if (previousQuestion !== null) {
-                if (userId === null) {
+                if (userId === null || userName !== msg.from.first_name) {
                     request.post({
                         url: 'https://questions-engine.herokuapp.com/create-user-if-not-exist',
                         form: {
@@ -33,6 +34,7 @@ telegramBot.on("message", function (msg) {
                         }
                     }, function (err, httpResponse, body) {
                         userId = JSON.parse(body).id;
+                        userName = JSON.parse(body).name;
                         request.post({
                             url: 'https://questions-engine.herokuapp.com/store-result',
                             form: {
