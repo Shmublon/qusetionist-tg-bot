@@ -16,43 +16,21 @@ telegramBot.onText(/\/start/, function (msg) {
     });
 });
 
-var userId = null;
-var userName = null;
 telegramBot.on("message", function (msg) {
     console.log("Chat id: " + msg.chat.id);
     console.log("Chat id: " + msg.from.first_name);
     if (msg.text !== '/start') {
         var storeAnswerPromise = new Promise(function (resolve, reject) {
-            if (userId === null || userName !== msg.from.first_name) {
-                request.post({
-                    url: 'https://questions-engine.herokuapp.com/create-user-if-not-exist',
-                    form: {
-                        'name': msg.from.first_name,
-                        'age': 0,
-                        'gender': 'male',
-                        'balance': 0
-                    }
-                }, function (err, httpResponse, body) {
-                    userId = JSON.parse(body).id;
-                    userName = JSON.parse(body).name;
-                    request('https://questions-engine.herokuapp.com/lastUnansweredQuestion/' + userId,
-                        function (error, response, result) {
-                            if (response.statusCode === 200) {
-                                request.put({
-                                    url: 'https://questions-engine.herokuapp.com/result/' + JSON.parse(result).id,
-                                    form: {
-                                        'answer': msg.text,
-                                        'answered': true
-                                    }
-                                }, function (error, response, body) {
-                                    resolve();
-                                });
-                            } else {
-                                resolve();
-                            }
-                        });
-                })
-            } else {
+            request.post({
+                url: 'https://questions-engine.herokuapp.com/create-user-if-not-exist',
+                form: {
+                    'name': msg.from.first_name,
+                    'age': 0,
+                    'gender': 'male',
+                    'balance': 0
+                }
+            }, function (err, httpResponse, body) {
+                var userId = JSON.parse(body).id;
                 request('https://questions-engine.herokuapp.com/lastUnansweredQuestion/' + userId,
                     function (error, response, result) {
                         if (response.statusCode === 200) {
@@ -63,15 +41,15 @@ telegramBot.on("message", function (msg) {
                                     'answered': true
                                 }
                             }, function (error, response, body) {
-                                resolve();
+                                resolve(userId);
                             });
                         } else {
-                            resolve();
+                            resolve(userId);
                         }
                     });
-            }
+            });
         });
-        storeAnswerPromise.then(function () {
+        storeAnswerPromise.then(function (userId) {
             request("https://questions-engine.herokuapp.com/random-question", function (error, response, question) {
                 nextQuestion(msg, JSON.parse(question), userId);
             });
