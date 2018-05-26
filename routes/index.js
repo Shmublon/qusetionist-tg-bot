@@ -34,11 +34,24 @@ telegramBot.on("message", function (msg) {
                 request('https://questions-engine.herokuapp.com/lastUnansweredQuestion/' + userId,
                     function (error, response, result) {
                         if (response.statusCode === 200) {
+                            var skipped = false;
+                            var user_answer = false;
+                            var answer = '';
+                            if (msg.text.toLowerCase() === 'пропусить') {
+                                skipped = true;
+                            } else {
+                                answer = msg.text;
+                                if (result.question.answers.indexOf(msg.text) === -1) {
+                                    user_answer = true;
+                                }
+                            }
                             request.put({
                                 url: 'https://questions-engine.herokuapp.com/result/' + JSON.parse(result).id,
                                 form: {
-                                    'answer': msg.text,
-                                    'answered': true
+                                    'answer': answer,
+                                    'answered': true,
+                                    'skipped': skipped,
+                                    'user_answer': user_answer
                                 }
                             }, function (error, response, body) {
                                 resolve(userId);
@@ -77,8 +90,7 @@ function nextQuestion(msg, question, userId) {
             form: {
                 'answer': '',
                 'user_id': userId,
-                'question_id': question.id,
-                'answered': false
+                'question_id': question.id
             }
         });
     });
