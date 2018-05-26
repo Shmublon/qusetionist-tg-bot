@@ -37,11 +37,11 @@ telegramBot.on("message", function (msg) {
                             var skipped = false;
                             var user_answer = false;
                             var answer = '';
-                            if (msg.text.toLowerCase() === 'пропусить') {
+                            if (msg.text.toLowerCase() === 'пропустить') {
                                 skipped = true;
                             } else {
                                 answer = msg.text;
-                                if (result.question.answers.indexOf(msg.text) === -1) {
+                                if (JSON.parse(result).question.answers.indexOf(msg.text) === -1) {
                                     user_answer = true;
                                 }
                             }
