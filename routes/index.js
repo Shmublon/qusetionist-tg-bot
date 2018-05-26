@@ -90,7 +90,10 @@ function nextQuestion(msg, question, userId) {
             form: {
                 'answer': '',
                 'user_id': userId,
-                'question_id': question.id
+                'question_id': question.id,
+                'answered': false,
+                'skipped': false,
+                'user_answer': false
             }
         });
     });
