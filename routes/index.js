@@ -22,7 +22,7 @@ telegramBot.on("message", function (msg) {
     if (msg.text !== '/start') {
         var storeAnswerPromise = new Promise(function (resolve, reject) {
             request.post({
-                url: 'https://questions-engine.herokuapp.com/create-user-if-not-exist',
+                url: 'http://ec2-34-209-71-86.us-west-2.compute.amazonaws.com:3000/create-user-if-not-exist',
                 form: {
                     'name': msg.from.first_name,
                     'age': 0,
@@ -31,7 +31,7 @@ telegramBot.on("message", function (msg) {
                 }
             }, function (err, httpResponse, body) {
                 var userId = JSON.parse(body).id;
-                request('https://questions-engine.herokuapp.com/lastUnansweredQuestion/' + userId,
+                request('http://ec2-34-209-71-86.us-west-2.compute.amazonaws.com:3000/lastUnansweredQuestion/' + userId,
                     function (error, response, result) {
                         if (response.statusCode === 200) {
                             var skipped = false;
@@ -46,7 +46,7 @@ telegramBot.on("message", function (msg) {
                                 }
                             }
                             request.put({
-                                url: 'https://questions-engine.herokuapp.com/result/' + JSON.parse(result).id,
+                                url: 'http://ec2-34-209-71-86.us-west-2.compute.amazonaws.com:3000/result/' + JSON.parse(result).id,
                                 form: {
                                     'answer': answer,
                                     'answered': true,
@@ -63,7 +63,7 @@ telegramBot.on("message", function (msg) {
             });
         });
         storeAnswerPromise.then(function (userId) {
-            request("https://questions-engine.herokuapp.com/random-question", function (error, response, question) {
+            request("http://ec2-34-209-71-86.us-west-2.compute.amazonaws.com:3000/random-question", function (error, response, question) {
                 nextQuestion(msg, JSON.parse(question), userId);
             });
         });
@@ -86,7 +86,7 @@ function nextQuestion(msg, question, userId) {
         }
     }).then(function (sentQuestion) {
         request.post({
-            url: 'https://questions-engine.herokuapp.com/store-result',
+            url: 'http://ec2-34-209-71-86.us-west-2.compute.amazonaws.com:3000/store-result',
             form: {
                 'answer': '',
                 'user_id': userId,
