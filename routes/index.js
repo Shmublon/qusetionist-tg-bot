@@ -11,9 +11,9 @@ telegramBot.onText(/\/start/, function (msg) {
         "Для начала введите что угодно...", {
         "reply_markup": {
             "keyboard": [["Поехали!"]],
-            "one_time_keyboard": true,
-            "disable_notification": true
-        }
+            "one_time_keyboard": true
+        },
+        "disable_notification": true
     });
 });
 
@@ -98,9 +98,9 @@ function nextQuestion(msg, question, userId) {
     telegramBot.sendMessage(msg.chat.id, question.text.toString(), {
         "reply_markup": {
             "keyboard": answersButtons,
-            "one_time_keyboard": true,
-            "disable_notification": true
-        }
+            "one_time_keyboard": true
+        },
+        "disable_notification": true
     }).then(function (sentQuestion) {
         request.post({
             url: 'http://ec2-34-209-71-86.us-west-2.compute.amazonaws.com:3000/store-result',
