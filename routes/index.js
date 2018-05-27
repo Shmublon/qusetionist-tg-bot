@@ -11,7 +11,8 @@ telegramBot.onText(/\/start/, function (msg) {
         "Для начала введите что угодно...", {
         "reply_markup": {
             "keyboard": [["Поехали!"]],
-            "one_time_keyboard": true
+            "one_time_keyboard": true,
+            "disable_notification": true
         }
     });
 });
@@ -65,7 +66,8 @@ telegramBot.on("message", function (msg) {
                                     telegramBot.sendMessage(msg.chat.id,
                                         "Вы заработали токен! Ваш баланс: <b>" + JSON.parse(user).balance + "</b>",
                                         {
-                                            "parse_mode": "html"
+                                            "parse_mode": "html",
+                                            "disable_notification": true
                                         });
                                     resolve(userId);
                                 });
@@ -96,7 +98,8 @@ function nextQuestion(msg, question, userId) {
     telegramBot.sendMessage(msg.chat.id, question.text.toString(), {
         "reply_markup": {
             "keyboard": answersButtons,
-            "one_time_keyboard": true
+            "one_time_keyboard": true,
+            "disable_notification": true
         }
     }).then(function (sentQuestion) {
         request.post({
