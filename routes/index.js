@@ -31,6 +31,7 @@ telegramBot.on("message", function (msg) {
                 }
             }, function (err, httpResponse, body) {
                 var userId = JSON.parse(body).id;
+                var balance = JSON.parse(body).balance;
                 request('http://ec2-34-209-71-86.us-west-2.compute.amazonaws.com:3000/lastUnansweredQuestion/' + userId,
                     function (error, response, result) {
                         if (response.statusCode === 200) {
@@ -44,6 +45,7 @@ telegramBot.on("message", function (msg) {
                                 if (JSON.parse(result).question.answers.indexOf(msg.text) === -1) {
                                     user_answer = true;
                                 }
+                                balance = balance + 1;
                             }
                             request.put({
                                 url: 'http://ec2-34-209-71-86.us-west-2.compute.amazonaws.com:3000/result/' + JSON.parse(result).id,
@@ -54,7 +56,15 @@ telegramBot.on("message", function (msg) {
                                     'user_answer': user_answer
                                 }
                             }, function (error, response, body) {
-                                resolve(userId);
+                                request.put({
+                                    url: 'http://ec2-34-209-71-86.us-west-2.compute.amazonaws.com:3000/user/' + JSON.parse(result).id,
+                                    form: {
+                                        'balance': balance
+                                    }
+                                }, function (error, response, user) {
+                                    telegramBot.sendMessage(msg.chat.id, "Вы заработали токен. Ваш баланс: " + JSON.parse(user).balance);
+                                    resolve(userId);
+                                });
                             });
                         } else {
                             resolve(userId);
