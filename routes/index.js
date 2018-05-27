@@ -57,7 +57,7 @@ telegramBot.on("message", function (msg) {
                                 }
                             }, function (error, response, body) {
                                 request.put({
-                                    url: 'http://ec2-34-209-71-86.us-west-2.compute.amazonaws.com:3000/user/' + JSON.parse(result).id,
+                                    url: 'http://ec2-34-209-71-86.us-west-2.compute.amazonaws.com:3000/user/' + userId,
                                     form: {
                                         'balance': balance
                                     }
