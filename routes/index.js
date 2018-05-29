@@ -2,10 +2,13 @@ var express = require('express');
 var router = express.Router();
 
 var TelegramBot = require('node-telegram-bot-api');
-var token = '599469376:AAE-o8YndW53cVB_LNGP3ssx4hdLGlxeeaA';
+// var token = '594036190:AAFuHq9GsgTybrX_3HLEhIh4c3LnK5j2DH8'; // token for testing bot
+var token = '599469376:AAE-o8YndW53cVB_LNGP3ssx4hdLGlxeeaA'; // token for real bot
 var request = require("request");
 var telegramBot = new TelegramBot(token, {polling: true});
 
+var domain = 'http://ec2-34-209-71-86.us-west-2.compute.amazonaws.com:3000';
+// var domain = 'http://localhost:3000';
 telegramBot.onText(/\/start/, function (msg) {
     telegramBot.sendMessage(msg.chat.id, "Тут будет некое описание того как этой штукой пользоваться. " +
         "Для начала введите что угодно...", {
@@ -23,7 +26,7 @@ telegramBot.on("message", function (msg) {
     if (msg.text !== '/start') {
         var storeAnswerPromise = new Promise(function (resolve, reject) {
             request.post({
-                url: 'http://ec2-34-209-71-86.us-west-2.compute.amazonaws.com:3000/create-user-if-not-exist',
+                url: domain + '/create-user-if-not-exist',
                 form: {
                     'name': msg.from.first_name,
                     'age': 0,
@@ -33,7 +36,7 @@ telegramBot.on("message", function (msg) {
             }, function (err, httpResponse, body) {
                 var userId = JSON.parse(body).id;
                 var balance = JSON.parse(body).balance;
-                request('http://ec2-34-209-71-86.us-west-2.compute.amazonaws.com:3000/lastUnansweredQuestion/' + userId,
+                request(domain + '/lastUnansweredQuestion/' + userId,
                     function (error, response, result) {
                         if (response.statusCode === 200) {
                             var skipped = false;
@@ -49,7 +52,7 @@ telegramBot.on("message", function (msg) {
                                 balance = balance + 1;
                             }
                             request.put({
-                                url: 'http://ec2-34-209-71-86.us-west-2.compute.amazonaws.com:3000/result/' + JSON.parse(result).id,
+                                url: domain + '/result/' + JSON.parse(result).id,
                                 form: {
                                     'answer': answer,
                                     'answered': true,
@@ -58,7 +61,7 @@ telegramBot.on("message", function (msg) {
                                 }
                             }, function (error, response, body) {
                                 request.put({
-                                    url: 'http://ec2-34-209-71-86.us-west-2.compute.amazonaws.com:3000/user/' + userId,
+                                    url: domain + '/user/' + userId,
                                     form: {
                                         'balance': balance
                                     }
@@ -79,8 +82,17 @@ telegramBot.on("message", function (msg) {
             });
         });
         storeAnswerPromise.then(function (userId) {
-            request("http://ec2-34-209-71-86.us-west-2.compute.amazonaws.com:3000/random-question", function (error, response, question) {
-                nextQuestion(msg, JSON.parse(question), userId);
+            request(domain + '/next-question/' + userId, function (error, response, question) {
+                if (response.statusCode === 200) {
+                    nextQuestion(msg, JSON.parse(question), userId);
+                } else {
+                    telegramBot.sendMessage(msg.chat.id, 'Вы ответили на все доступные вопросы, ждите новых вопросов!', {
+                        "disable_notification": true,
+                        "reply_markup": {
+                            "remove_keyboard": true
+                        }
+                    })
+                }
             });
         });
     }
@@ -103,14 +115,15 @@ function nextQuestion(msg, question, userId) {
         "disable_notification": true
     }).then(function (sentQuestion) {
         request.post({
-            url: 'http://ec2-34-209-71-86.us-west-2.compute.amazonaws.com:3000/store-result',
+            url: domain + '/store-result',
             form: {
                 'answer': '',
                 'user_id': userId,
                 'question_id': question.id,
                 'answered': false,
                 'skipped': false,
-                'user_answer': false
+                'user_answer': false,
+                'archived': false
             }
         });
     });
