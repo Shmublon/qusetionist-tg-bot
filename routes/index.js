@@ -66,12 +66,14 @@ telegramBot.on("message", function (msg) {
                                         'balance': balance
                                     }
                                 }, function (error, response, user) {
-                                    telegramBot.sendMessage(msg.chat.id,
-                                        "Вы заработали токен! Ваш баланс: <b>" + JSON.parse(user).balance + "</b>",
-                                        {
-                                            "parse_mode": "html",
-                                            "disable_notification": true
-                                        });
+                                    if (!skipped) {
+                                        telegramBot.sendMessage(msg.chat.id,
+                                            "Вы заработали токен! Ваш баланс: <b>" + JSON.parse(user).balance + "</b>",
+                                            {
+                                                "parse_mode": "html",
+                                                "disable_notification": true
+                                            });
+                                    }
                                     resolve(userId);
                                 });
                             });
